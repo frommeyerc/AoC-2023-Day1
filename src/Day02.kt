@@ -1,3 +1,5 @@
+import kotlin.math.max
+
 fun main() {
     fun checkPossible(game: Game): Boolean {
         game.draws.forEach {
@@ -6,7 +8,7 @@ fun main() {
         return true
     }
 
-    fun part1(input: List<String>): Int {
+    fun parseInput(input: List<String>): List<Game> {
         val regex = """Game ([0-9]+): |([0-9]+) blue|([0-9]+) green|([0-9]+) red|(;)""".toRegex()
         return input.map {
             var pos = 0
@@ -26,16 +28,29 @@ fun main() {
                 }
             }
             game
-        }.sumOf { if (checkPossible(it)) it.number else 0}
+        }
+    }
+
+    fun part1(input: List<String>): Int {
+        return parseInput(input).sumOf { if (checkPossible(it)) it.number else 0 }
+    }
+
+    fun checkSmallAmount(game: Game): Int {
+        return game.draws.map {
+            Triple(it.blue, it.green, it.red)
+        }.reduce { acc, triple ->
+            Triple(max(acc.first, triple.first), max(acc.second, triple.second), max(acc.third, triple.third))
+        }.let { it.first * it.second * it.third }
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        return parseInput(input).sumOf { checkSmallAmount(it) }
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day02_test")
     check(part1(testInput) == 8)
+    check(part2(testInput) == 2286)
 
     val input = readInput("Day02")
     part1(input).println()
