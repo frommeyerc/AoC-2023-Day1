@@ -15,13 +15,38 @@ fun main() {
             .map { temperatureToHumidity.lookUp(it) }.minOf { humidityToLocation.lookUp(it) }
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
+    fun part2(input: List<String>): Long {
+        val iterator = input.iterator()
+        val seeds = iterator.next().drop(7).split(' ').map { it.toLong() }
+            .chunked(2) { LongRange(it[0], it[0] + it[1] - 1) }
+        val seedToSoil = PuzzleMap(iterator)
+        val soilToFertilizer = PuzzleMap(iterator)
+        val fertilizerToWater = PuzzleMap(iterator)
+        val waterToLight = PuzzleMap(iterator)
+        val lightToTemperature = PuzzleMap(iterator)
+        val temperatureToHumidity = PuzzleMap(iterator)
+        val humidityToLocation = PuzzleMap(iterator)
+        return seeds.minOf { println("Processing $it"); it.minOf {
+            humidityToLocation.lookUp(
+                temperatureToHumidity.lookUp(
+                    lightToTemperature.lookUp(
+                        waterToLight.lookUp(
+                            fertilizerToWater.lookUp(
+                                soilToFertilizer.lookUp(
+                                    seedToSoil.lookUp(it)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        }}
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day05_test")
     check(part1(testInput) == 35L)
+    check(part2(testInput) == 46L)
 
     val input = readInput("Day05")
     part1(input).println()
