@@ -4,13 +4,15 @@ fun main() {
             .mapIndexed { index, hand -> (index + 1) * hand.bid }.sum()
     }
 
-    fun part2(input: List<String>): Int {
-        return input.size
+    fun part2(input: List<String>): Long {
+        return input.map { it.split(' ') }.map { Hand(it[0], it[1]) }.sorted()
+            .mapIndexed { index, hand -> (index + 1) * hand.bid.toLong() }.sum()
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day07_test")
-    check(part1(testInput) == 6440)
+    //check(part1(testInput) == 6440)
+    check(part2(testInput) == 5905L)
 
     val input = readInput("Day07")
     part1(input).println()
@@ -33,21 +35,25 @@ enum class HandType {
             var longRun = 0
             var sndRun = 0
             var runLength = 0
+            var jokers = 0
             myHand.forEach {
-                if (it == c)
-                    runLength++
-                else {
-                    c = it
-                    if (runLength > longRun) {
-                        val tmp = longRun
-                        longRun = runLength
-                        runLength = tmp
+                if (it == 'J') jokers++
+                else
+                    if (it == c)
+                        runLength++
+                    else {
+                        c = it
+                        if (runLength > longRun) {
+                            val tmp = longRun
+                            longRun = runLength
+                            runLength = tmp
+                        }
+                        if (runLength > sndRun)
+                            sndRun = runLength
+                        runLength = 1
                     }
-                    if (runLength > sndRun)
-                        sndRun = runLength
-                    runLength = 1
-                }
             }
+            longRun += jokers
             return when (longRun) {
                 5 -> FiveOfAKind
                 4 -> FourOfAKind
@@ -77,7 +83,7 @@ class Hand(hand: String, bidStr: String) : Comparable<Hand> {
         return when (c) {
             in '2'..'9' -> "$c".toInt()
             'T' -> 10
-            'J' -> 11
+            'J' -> 1
             'Q' -> 12
             'K' -> 13
             'A' -> 14
