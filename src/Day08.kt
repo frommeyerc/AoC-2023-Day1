@@ -1,4 +1,6 @@
 import java.lang.IllegalArgumentException
+import kotlin.math.max
+import kotlin.math.pow
 
 fun main() {
 
@@ -39,24 +41,48 @@ fun main() {
         }
     }
 
-    fun part2(input: List<String>): Int {
+    fun move(pos: String, network: Map<String, Pair<String, String>>, dir: Char): String {
+        return when (dir) {
+            'L' -> network[pos]!!.first
+            'R' -> network[pos]!!.second
+            else -> throw IllegalArgumentException()
+        }
+    }
+
+    fun factorize(n: Int): List<Int> {
+        var remaining = n
+        var factor = 2
+        val result = mutableListOf<Int>()
+        while (factor * factor <= remaining) {
+            while (remaining % factor == 0) {
+                result.add(factor)
+                remaining /= factor
+            }
+            factor++
+        }
+        result.add(remaining)
+        return result
+    }
+
+    fun part2(input: List<String>): Long {
         val (network, instr) = parseInput(input)
         val start = network.keys.filter { it.endsWith('A') }
-        var pos = start
-        var pc = 0;
-        var count = 0;
-        while (pos.find { !it.endsWith('Z') } != null) {
-            pos.forEachIndexed() { i, p ->
-                if (p.endsWith('Z')) {
-                    val paddedCount = count.toString().padStart(10, ' ')
-                    println(paddedCount + " " + p.padStart((i + 1) * 4, ' '))
-                }
+        return start.map {
+            var p = it
+            var pc = 0;
+            var count = 0;
+            while (!p.endsWith('Z')) {
+                count++
+                p = move(p, network, instr[pc++])
+                if (pc == instr.length) pc = 0
             }
-            count++
-            pos = ghostGo(pos, network, instr[pc++])
-            if (pc == instr.length) pc = 0
-        }
-        return count
+            count
+        }.map { factorize(it) }.map { it.groupBy { it }.mapValues { it.value.size } }
+            .fold(mapOf<Int, Int>()) { acc, factors ->
+            listOf(acc.keys, factors.keys).flatten().associate {
+                Pair(it, max(acc.getOrDefault(it, 0), factors.getOrDefault(it, 0)))
+            }
+        }.entries.fold(1L) { acc, e -> acc * e.key.toDouble().pow(e.value).toLong() }
     }
 
     // test if implementation meets criteria from the description, like:
