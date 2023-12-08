@@ -29,13 +29,39 @@ fun main() {
         return count
     }
 
+    fun ghostGo(positions: List<String>, network: Map<String, Pair<String, String>>, dir: Char): List<String> {
+        return positions.map {
+            when (dir) {
+                'L' -> network[it]!!.first
+                'R' -> network[it]!!.second
+                else -> throw IllegalArgumentException()
+            }
+        }
+    }
+
     fun part2(input: List<String>): Int {
-        return input.size
+        val (network, instr) = parseInput(input)
+        val start = network.keys.filter { it.endsWith('A') }
+        var pos = start
+        var pc = 0;
+        var count = 0;
+        while (pos.find { !it.endsWith('Z') } != null) {
+            pos.forEachIndexed() { i, p ->
+                if (p.endsWith('Z')) {
+                    val paddedCount = count.toString().padStart(10, ' ')
+                    println(paddedCount + " " + p.padStart((i + 1) * 4, ' '))
+                }
+            }
+            count++
+            pos = ghostGo(pos, network, instr[pc++])
+            if (pc == instr.length) pc = 0
+        }
+        return count
     }
 
     // test if implementation meets criteria from the description, like:
-    val testInput = readInput("Day08_test")
-    check(part1(testInput) == 2)
+    val testInput = readInput("Day08_test2")
+    //check(part2(testInput) == 6)
 
     val input = readInput("Day08")
     part1(input).println()
