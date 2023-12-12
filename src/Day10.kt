@@ -131,7 +131,7 @@ fun main() {
             for (y in field[x].indices) {
                 img.setRGB(x, y, intToRgb(field[x][y]))
             }
-        ImageIO.write(img, "BMP", File("test1.bmp"))
+        ImageIO.write(img, "JPG", File("test1.jpg"))
     }
 
     fun squareFree(field: Array<Array<Int>>, x: Int, y: Int): Boolean {
