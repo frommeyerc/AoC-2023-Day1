@@ -38,9 +38,9 @@ fun main() {
 
     }
 
-    fun part1(input: List<String>): Int {
+    fun calcEnergizing(input: List<String>, start: Triple<Int, Int, Direction>): Int {
         val energized = Array(input[0].length) { Array(input.size) { 0 } }
-        val beams = mutableListOf(Triple(-1, 0, Direction.RIGHT))
+        val beams = mutableListOf(start)
         while (beams.isNotEmpty()) {
             val beam = beams.removeFirst()
             var next = beam.third.nextField(beam.first, beam.second)
@@ -56,12 +56,20 @@ fun main() {
                 next = dir.nextField(next.first, next.second)
             }
         }
-        snapshot(input, energized)
         return energized.sumOf { it.count { it > 0 } }
     }
 
+    fun part1(input: List<String>): Int {
+        return calcEnergizing(input, Triple(-1, 0, Direction.RIGHT))
+    }
+
     fun part2(input: List<String>): Int {
-        return input.size
+        return maxOf(
+            input.indices.maxOf { calcEnergizing(input, Triple(-1, it, Direction.RIGHT)) },
+            input.indices.maxOf { calcEnergizing(input, Triple(input[0].length, it, Direction.LEFT)) },
+            input[0].indices.maxOf { calcEnergizing(input, Triple(-1, it, Direction.DOWN)) },
+            input[0].indices.maxOf { calcEnergizing(input, Triple(input.size, it, Direction.UP)) }
+        )
     }
 
     // test if implementation meets criteria from the description, like:
