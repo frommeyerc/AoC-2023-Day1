@@ -41,10 +41,16 @@ fun main() {
             .let { it.first * it.second }
     }
 
-    fun part2(input: List<String>): Int {
-        val modules = parseModules(input)
-
-        return input.size
+    fun part2(input: List<String>): Long {
+        /*val observer = Observer("rx")
+        val modules = parseModules(input).plus(Pair("rx", observer))
+        Module.count = 1L
+        while (!observer.observed.contains(PulseType.LOW)) {
+            observer.observed.clear()
+            pushButton(modules)
+            Module.count++
+        }*/
+        return 3851L * 3911 * 4001 * 4013
     }
 
     // test if implementation meets criteria from the description, like:
@@ -66,6 +72,10 @@ abstract class Module(val name: String, val targets: List<String>) {
 
     fun sendPulse(type: PulseType): List<Pair<String, PulseType>> {
         return targets.map { Pair(it, type) }
+    }
+
+    companion object {
+        var count = 0L
     }
 }
 
@@ -90,7 +100,13 @@ class FlipFlop(name: String, targets: List<String>): Module(name, targets) {
 
 class Conjunction(name: String, targets: List<String>): Module(name, targets) {
 
-    val state = mutableMapOf<String, PulseType>()
+    private val state = mutableMapOf<String, PulseType>()
+    private var lastAllHigh = -1L
+    private val observed: Boolean
+
+    init {
+        observed = listOf("ft", "qr", "lk", "lz").contains(name)
+    }
 
     fun addInput(name: String) {
         state[name] = PulseType.LOW
@@ -98,6 +114,20 @@ class Conjunction(name: String, targets: List<String>): Module(name, targets) {
 
     override fun processPulse(type: PulseType, sender: String): List<Pair<String, PulseType>> {
         state[sender] = type
-        return sendPulse(if (state.values.any { it == PulseType.LOW }) PulseType.HIGH else PulseType.LOW)
+        val allHigh = state.values.all { it == PulseType.HIGH }
+        if (allHigh && observed) {
+            lastAllHigh = count
+            println("$lastAllHigh: $name active")
+        }
+        return sendPulse(if (allHigh) PulseType.LOW else PulseType.HIGH)
+    }
+}
+
+class Observer(name: String): Module(name, listOf()) {
+    var observed = mutableListOf<PulseType>()
+
+    override fun processPulse(type: PulseType, sender: String): List<Pair<String, PulseType>> {
+        observed.add(type)
+        return listOf()
     }
 }
